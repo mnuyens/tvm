@@ -197,7 +197,7 @@ def build(graph, target=None, shape=None, dtype="float32",
 
     target : str or :any:`tvm.target.Target`, optional
         The build target
-
+o
     shape : dict of str to tuple, optional
         The input shape to the graph
 
@@ -272,7 +272,7 @@ def build(graph, target=None, shape=None, dtype="float32",
         graph = optimize(graph, shape, dtype, layout)
 
     # Clear extra params without nodes.
-    _remove_noref_params(params, graph)
+    params =_remove_noref_params(params, graph)
 
     # Precompute prune
     if params and cfg.pass_enabled("PrecomputePrune"):
@@ -300,6 +300,7 @@ def build(graph, target=None, shape=None, dtype="float32",
         params.update(init_var)
     return graph, libmod, params
 
+
 def _remove_noref_params(params, graph):
     """ Helper to clear non referenced params
 
@@ -312,12 +313,14 @@ def _remove_noref_params(params, graph):
         The parameter dictionary
     """
     arg_list = set(graph.symbol.list_input_names())
-
     if params:
+        params = params.copy()
         param_keys = list(params.keys())
         for key in param_keys:
             if key not in arg_list:
                 params.pop(key)
+    return params
+
 
 def _run_graph(graph, params):
     """Helper utility to build and run and get outputs, only use cpu mode.
