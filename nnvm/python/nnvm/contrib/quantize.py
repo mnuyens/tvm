@@ -2,6 +2,7 @@
 """Namespace for building operators."""
 from __future__ import absolute_import as _abs
 
+import tvm
 from tvm.contrib import graph_runtime
 from ..compiler import graph_attr, graph_util
 from ..compiler.build_module import _update_shape_dtype, _remove_noref_params, build
@@ -47,7 +48,7 @@ def simplify_graph(graph, shape, params):
 
 
 class Quantizer(object):
-    def __init__(graph, shape, params):
+    def __init__(self, graph, target, shape, params):
         """Quantize tool, used to create several views of parameters.
 
         Parameters
@@ -65,6 +66,7 @@ class Quantizer(object):
         self.shape_dict = shape
         self.orig_graph = graph
         self.orig_params = params
-        items = buld(graph, shape=self.shape_dict, params=self.orig_params)
-        self.orig_rt = graph_runtime.create(items[0], items[1])
+        items = build(graph, target, shape=self.shape_dict, params=self.orig_params)
+        ctx = tvm.context(str(target), 0)
+        self.orig_rt = graph_runtime.create(items[0], items[1], ctx)
         self.orig_rt.set_input(**items[2])
